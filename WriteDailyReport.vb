@@ -13,19 +13,19 @@ Sub WriteDailyReport()
     '定义日期数组
     Dim arrDate As Variant
     '定义多维数组，存放对比的两个月的数据
-    Dim twoMonthDataArr(1 To 12, 1 To 2)
+    Dim twoMonthDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两周的数据
-    Dim twoWeekDataArr(1 To 12, 1 To 2)
+    Dim twoWeekDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两天的数据
-    Dim twoDayDataArr(1 To 12, 1 To 2)
+    Dim twoDayDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两年的数据
-    Dim twoYearDataArr(1 To 12, 1 To 2)
+    Dim twoYearDataArr(1 To 28, 1 To 2)
     '月份数据，数据中最小的两个月
     Dim twoMonthArr(1 To 2) As Variant, dicMonth As Variant, arrMonth As Variant
     '年份数据，数据中最小的两年
     Dim twoYearArr(1 To 2) As Variant, dicYear As Variant, arrYear As Variant
     '指标数据
-    Dim fImpression, fClick, fCost, fConversion, fRevenue
+    Dim fImpression, fClick, fCost, fConversion, fConversion1, fConversion2, fConversion3, fConversion4, fRevenue
     '1元人民币对应的外币
     Dim rate As Double, currencyFormat As Variant
         
@@ -169,8 +169,12 @@ Sub WriteDailyReport()
         fImpression = Sheets(dataSheetName).Cells(rowIndex, 3)
         fClick = Sheets(dataSheetName).Cells(rowIndex, 4)
         fCost = Sheets(dataSheetName).Cells(rowIndex, 5) * rate
-        fConversion = Sheets(dataSheetName).Cells(rowIndex, 6)
-        fRevenue = Sheets(dataSheetName).Cells(rowIndex, 7) * rate
+        fConversion1 = Sheets(dataSheetName).Cells(rowIndex, 6)
+        fConversion2 = Sheets(dataSheetName).Cells(rowIndex, 7)
+        fConversion3 = Sheets(dataSheetName).Cells(rowIndex, 8)
+        fConversion4 = Sheets(dataSheetName).Cells(rowIndex, 9)
+        fConversion = fConversion1 + fConversion2 + fConversion3 + fConversion4
+        fRevenue = Sheets(dataSheetName).Cells(rowIndex, 10) * rate
 
         If (channelName = strChannel Or channelName = "" Or channelName = "all") Then
             filterFlag = True
@@ -182,32 +186,32 @@ Sub WriteDailyReport()
             '两月对比数据
             strMonth = CStr(Year(strDate)) & "/" & CStr(Month(strDate))
             If strMonth = twoMonthArr(1) Then
-                Call FillArrayData(twoMonthDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoMonthDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
             If strMonth = twoMonthArr(2) Then
-                Call FillArrayData(twoMonthDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoMonthDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
 
             '两周对比数据
             If IsInWeek(CStr(arrDate(1, 1)), strDate) Then
-                Call FillArrayData(twoWeekDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
-                Call FillArrayData(twoWeekDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoWeekDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoWeekDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
 
             '两天对比数据
             If CStr(arrDate(1, 1)) = strDate Then
-                Call FillArrayData(twoDayDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
-                Call FillArrayData(twoDayDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoDayDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoDayDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
             
             '显示年份的对比数据
             If isDisplayYear Then
                 strYear = CStr(Year(strDate))
                 If strYear = twoYearArr(1) Then
-                    Call FillArrayData(twoYearDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
+                    Call FillArrayData(twoYearDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 End If
                 If strYear = twoYearArr(2) Then
-                    Call FillArrayData(twoYearDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                    Call FillArrayData(twoYearDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 End If
             End If
             
@@ -223,23 +227,23 @@ Sub WriteDailyReport()
 
     '向报表中写入前后对比的两天数据
     Call ComMetricArrayData(twoDayDataArr)
-    Call FillCellData(reportName, 24, 4, twoDayDataArr)
+    Call FillCellData(reportName, 40, 4, twoDayDataArr)
 
     '向报表中写入前后对比的两周数据
     Call ComMetricArrayData(twoWeekDataArr)
-    Call FillCellData(reportName, 24, 9, twoWeekDataArr)
+    Call FillCellData(reportName, 40, 9, twoWeekDataArr)
     
     '向报表中写入前后对比的两年数据
     If isDisplayYear Then
         Call ComMetricArrayData(twoYearDataArr)
-        Call FillCellData(reportName, 24, 14, twoYearDataArr)
+        Call FillCellData(reportName, 40, 14, twoYearDataArr)
     End If
     
     '设置单个格货币格式
     Call SetCurrencyFormat(reportName, 9, 4, currencyFormat)
-    Call SetCurrencyFormat(reportName, 24, 4, currencyFormat)
-    Call SetCurrencyFormat(reportName, 24, 9, currencyFormat)
-    Call SetCurrencyFormat(reportName, 24, 14, currencyFormat)
+    Call SetCurrencyFormat(reportName, 40, 4, currencyFormat)
+    Call SetCurrencyFormat(reportName, 40, 9, currencyFormat)
+    Call SetCurrencyFormat(reportName, 40, 14, currencyFormat)
     '绘制饼图
     Call PieChartForDaily
     '绘制柱形图
@@ -249,7 +253,7 @@ End Sub
 
 Sub DDLDailyChanged()
 '渠道列表改变或日期改变
-    Dim fImpression, fClick, fCost, fConversion, fRevenue
+    Dim fImpression, fClick, fCost, fConversion, fConversion1, fConversion2, fConversion3, fConversion4, fRevenue
     Dim strChannel As String, strDate As String, strMonth As String, strYear As String
     Dim i As Integer, j As Integer, totalRowCount As Integer, rowIndex As Integer
     Dim channelName As String, dataSheetName As String, reportName As String
@@ -261,13 +265,13 @@ Sub DDLDailyChanged()
     Dim filterFlag As Boolean
     Dim rate As Double
     '定义多维数组，存放对比的两个月的数据
-    Dim twoMonthDataArr(1 To 12, 1 To 2)
+    Dim twoMonthDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两周的数据
-    Dim twoWeekDataArr(1 To 12, 1 To 2)
+    Dim twoWeekDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两天的数据
-    Dim twoDayDataArr(1 To 12, 1 To 2)
+    Dim twoDayDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两年的数据
-    Dim twoYearDataArr(1 To 12, 1 To 2)
+    Dim twoYearDataArr(1 To 28, 1 To 2)
     
     Application.ScreenUpdating = False
     
@@ -304,8 +308,12 @@ Sub DDLDailyChanged()
         fImpression = Sheets(dataSheetName).Cells(rowIndex, 3)
         fClick = Sheets(dataSheetName).Cells(rowIndex, 4)
         fCost = Sheets(dataSheetName).Cells(rowIndex, 5) * rate
-        fConversion = Sheets(dataSheetName).Cells(rowIndex, 6)
-        fRevenue = Sheets(dataSheetName).Cells(rowIndex, 7) * rate
+        fConversion1 = Sheets(dataSheetName).Cells(rowIndex, 6)
+        fConversion2 = Sheets(dataSheetName).Cells(rowIndex, 7)
+        fConversion3 = Sheets(dataSheetName).Cells(rowIndex, 8)
+        fConversion4 = Sheets(dataSheetName).Cells(rowIndex, 9)
+        fConversion = fConversion1 + fConversion2 + fConversion3 + fConversion4
+        fRevenue = Sheets(dataSheetName).Cells(rowIndex, 10) * rate
     
     
         If (channelName = strChannel Or channelName = "" Or channelName = "all") Then
@@ -319,37 +327,37 @@ Sub DDLDailyChanged()
             '两月对比数据
             strMonth = CStr(Year(strDate)) & "/" & CStr(Month(strDate))
             If strMonth = monthStart Then
-                Call FillArrayData(twoMonthDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoMonthDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
 
             If strMonth = monthEnd Then
-                Call FillArrayData(twoMonthDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoMonthDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
             If isDisplayYear Then
                 '年对比数据
                 strYear = CStr(Year(strDate))
                 If strYear = yearStart Then
-                    Call FillArrayData(twoYearDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
+                    Call FillArrayData(twoYearDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 End If
                 If strYear = yearEnd Then
-                    Call FillArrayData(twoYearDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                    Call FillArrayData(twoYearDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 End If
             End If
             
             '两周对比数据
             If IsInWeek(weekStart, strDate) Then
-                Call FillArrayData(twoWeekDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoWeekDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
             If IsInWeek(weekEnd, strDate) Then
-                Call FillArrayData(twoWeekDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoWeekDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
             
             '两天对比数据
             If dayStart = strDate Then
-                Call FillArrayData(twoDayDataArr, 1, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoDayDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
             If dayEnd = strDate Then
-                Call FillArrayData(twoDayDataArr, 2, fImpression, fClick, fConversion, fCost, fRevenue)
+                Call FillArrayData(twoDayDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
         End If
         
@@ -362,16 +370,16 @@ Sub DDLDailyChanged()
 
     '向报表中写入前后对比的两天数据
     Call ComMetricArrayData(twoDayDataArr)
-    Call FillCellData(reportName, 24, 4, twoDayDataArr)
+    Call FillCellData(reportName, 40, 4, twoDayDataArr)
 
     '向报表中写入前后对比的两周数据
     Call ComMetricArrayData(twoWeekDataArr)
-    Call FillCellData(reportName, 24, 9, twoWeekDataArr)
+    Call FillCellData(reportName, 40, 9, twoWeekDataArr)
     
     '向报表中写入前后对比的两年数据
     If isDisplayYear Then
         Call ComMetricArrayData(twoYearDataArr)
-        Call FillCellData(reportName, 24, 14, twoYearDataArr)
+        Call FillCellData(reportName, 40, 14, twoYearDataArr)
     End If
 
 End Sub
@@ -407,7 +415,7 @@ Sub ColumnClusteredChartForDaily()
     Set dicDate = CreateObject("Scripting.Dictionary")
     '源表中得到有数据的行
     n = Sheets(dataSheetName).[A65536].End(xlUp).Row
-    arr = Sheets(dataSheetName).Range("A3:G" & n)
+    arr = Sheets(dataSheetName).Range("A3:J" & n)
     
     For i = 1 To UBound(arr)
         '取得数据中的日期
@@ -421,8 +429,8 @@ Sub ColumnClusteredChartForDaily()
         dicMetricData(cellYearMonth & "Imp") = dicMetricData(cellYearMonth & "Imp") + arr(i, 3)
         dicMetricData(cellYearMonth & "Click") = dicMetricData(cellYearMonth & "Click") + arr(i, 4)
         dicMetricData(cellYearMonth & "Cost") = dicMetricData(cellYearMonth & "Cost") + arr(i, 5) * rate
-        dicMetricData(cellYearMonth & "Conversion") = dicMetricData(cellYearMonth & "Conversion") + arr(i, 6)
-        dicMetricData(cellYearMonth & "Revenue") = dicMetricData(cellYearMonth & "Revenue") + arr(i, 7) * rate
+        dicMetricData(cellYearMonth & "Conversion") = dicMetricData(cellYearMonth & "Conversion") + arr(i, 6) + arr(i, 7) + arr(i, 8) + arr(i, 9)
+        dicMetricData(cellYearMonth & "Revenue") = dicMetricData(cellYearMonth & "Revenue") + arr(i, 10) * rate
 
     Next
     
@@ -513,7 +521,7 @@ Sub PieChartForDaily()
     Set dicChannel = CreateObject("Scripting.Dictionary")
     '源表中得到有数据的行
     n = Sheets(dataSheetName).[A65536].End(xlUp).Row
-    arr = Sheets(dataSheetName).Range("A3:G" & n)
+    arr = Sheets(dataSheetName).Range("A3:J" & n)
     
     For i = 1 To UBound(arr)
         '取得数据中的渠道
@@ -525,8 +533,8 @@ Sub PieChartForDaily()
         dicMetricData(cellChannel & "Imp") = dicMetricData(cellChannel & "Imp") + arr(i, 3)
         dicMetricData(cellChannel & "Click") = dicMetricData(cellChannel & "Click") + arr(i, 4)
         dicMetricData(cellChannel & "Cost") = dicMetricData(cellChannel & "Cost") + arr(i, 5) * rate
-        dicMetricData(cellChannel & "Conversion") = dicMetricData(cellChannel & "Conversion") + arr(i, 6)
-        dicMetricData(cellChannel & "Revenue") = dicMetricData(cellChannel & "Revenue") + arr(i, 7) * rate
+        dicMetricData(cellChannel & "Conversion") = dicMetricData(cellChannel & "Conversion") + arr(i, 6) + arr(i, 7) + arr(i, 8) + arr(i, 9)
+        dicMetricData(cellChannel & "Revenue") = dicMetricData(cellChannel & "Revenue") + arr(i, 10) * rate
     Next
 
     Erase arr
@@ -554,14 +562,14 @@ Sub PieChartForDaily()
 
     '没有饼图重新创建，有的话使用老格式
     If Not IsShapeExists(reportName, "PieDailyChart") Then
-        Call Make3DPieChart(reportName, "S2:S" & (rowCount + 1) & ",Y2:Y" & (rowCount + 1), reportName, Range("C39").left, Range("C39").top, 450, 250, "PieDailyChart", "All Channel", True)
+        Call Make3DPieChart(reportName, "S2:S" & (rowCount + 1) & ",Y2:Y" & (rowCount + 1), reportName, Range("C69").left, Range("C69").top, 450, 250, "PieDailyChart", "All Channel", True)
     Else
         Sheets(reportName).ChartObjects("PieDailyChart").Chart.SetSourceData (Sheets(reportName).Range("S2:S" & (rowCount + 1) & ",Y2:Y" & (rowCount + 1)))
     End If
 
     If Not IsShapeExists(reportName, "chartMetricThree") Then
         metricFields = Array("Cost", "Conversion", "Revenue")
-        Call AddDdlInOneCell(reportName, "C39", "DailyChartMetricThreeChange", metricFields, "chartMetricThree", 1)
+        Call AddDdlInOneCell(reportName, "C72", "DailyChartMetricThreeChange", metricFields, "chartMetricThree", 1)
     Else
         Sheets(reportName).Shapes("chartMetricThree").ControlFormat.ListIndex = 1
     End If
@@ -604,7 +612,7 @@ Sub DailyChartDataTypeChange()
     Set dicDate = CreateObject("Scripting.Dictionary")
     '源表中得到有数据的行
     n = Sheets(dataSheetName).[A65536].End(xlUp).Row
-    arr = Sheets(dataSheetName).Range("A3:G" & n)
+    arr = Sheets(dataSheetName).Range("A3:J" & n)
     
     For i = 1 To UBound(arr)
         '取得数据中的渠道和日期
@@ -629,8 +637,8 @@ Sub DailyChartDataTypeChange()
                 dicMetricData(cellYearMonth & "Imp") = dicMetricData(cellYearMonth & "Imp") + arr(i, 3)
                 dicMetricData(cellYearMonth & "Click") = dicMetricData(cellYearMonth & "Click") + arr(i, 4)
                 dicMetricData(cellYearMonth & "Cost") = dicMetricData(cellYearMonth & "Cost") + arr(i, 5) * rate
-                dicMetricData(cellYearMonth & "Conversion") = dicMetricData(cellYearMonth & "Conversion") + arr(i, 6)
-                dicMetricData(cellYearMonth & "Revenue") = dicMetricData(cellYearMonth & "Revenue") + arr(i, 7) * rate
+                dicMetricData(cellYearMonth & "Conversion") = dicMetricData(cellYearMonth & "Conversion") + arr(i, 6) + arr(i, 7) + arr(i, 8) + arr(i, 9)
+                dicMetricData(cellYearMonth & "Revenue") = dicMetricData(cellYearMonth & "Revenue") + arr(i, 10) * rate
             Else
                 If strChartDataType = cellYearMonth Then
                     If dicDate(cellDate) = "" Then
@@ -640,8 +648,8 @@ Sub DailyChartDataTypeChange()
                     dicMetricData(cellDate & "Imp") = dicMetricData(cellDate & "Imp") + arr(i, 3)
                     dicMetricData(cellDate & "Click") = dicMetricData(cellDate & "Click") + arr(i, 4)
                     dicMetricData(cellDate & "Cost") = dicMetricData(cellDate & "Cost") + arr(i, 5) * rate
-                    dicMetricData(cellDate & "Conversion") = dicMetricData(cellDate & "Conversion") + arr(i, 6)
-                    dicMetricData(cellDate & "Revenue") = dicMetricData(cellDate & "Revenue") + arr(i, 7) * rate
+                    dicMetricData(cellDate & "Conversion") = dicMetricData(cellDate & "Conversion") + arr(i, 6) + arr(i, 7) + arr(i, 8) + arr(i, 9)
+                    dicMetricData(cellDate & "Revenue") = dicMetricData(cellDate & "Revenue") + arr(i, 10) * rate
                 End If
             End If
         
