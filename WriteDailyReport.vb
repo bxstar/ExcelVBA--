@@ -11,7 +11,7 @@ Sub WriteDailyReport()
     '定义渠道数组
     Dim arrChannels As Variant
     '定义日期数组
-    Dim arrDate As Variant
+    Dim arrDate As Variant, firstDate As Variant
     '定义多维数组，存放对比的两个月的数据
     Dim twoMonthDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两周的数据
@@ -47,6 +47,11 @@ Sub WriteDailyReport()
     For rowIndex = 3 To totalRowCount
         strDate = Sheets(dataSheetName).Cells(rowIndex, 2)
         If strDate = "" Then Exit For
+        If Not IsDate(strDate) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是日期格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
+        
         strMonth = CStr(Month(strDate))
         strYear = CStr(Year(strDate))
         strYearMonth = strYear & "/" & strMonth
@@ -78,6 +83,11 @@ Sub WriteDailyReport()
         
     Next rowIndex
 
+    '没有数据，清空报表
+    If dicMonth.Count = 0 Then
+        Call ClearReportData(reportName)
+        Exit Sub
+    End If
     
     If twoMonthArr(2) = "" Then twoMonthArr(2) = twoMonthArr(1)
     If twoYearArr(2) = "" Then twoYearArr(2) = twoYearArr(1)
@@ -121,6 +131,18 @@ Sub WriteDailyReport()
     Sheets(reportName).Shapes("chartDataType").OnAction = "DailyChartDataTypeChange"
 
     arrDate = DDLSourceFromDataColumn("B", dataSheetName, False, 3)
+    
+    If IsDate(arrDate) Then
+    '只有一行数据，构造数组用于绑定列表
+        firstDate = arrDate
+        arrDate = Array(Array(arrDate))
+    ElseIf IsArray(arrDate) Then
+        firstDate = arrDate(1, 1)
+    Else
+        MsgBox "元数据日期列格式不对"
+        Exit Sub
+    End If
+    
     '一天开始日期列表
     Sheets(reportName).Shapes("ddlDayStart").ControlFormat.RemoveAllItems
     Sheets(reportName).Shapes("ddlDayStart").ControlFormat.AddItem arrDate
@@ -176,6 +198,16 @@ Sub WriteDailyReport()
         fConversion = fConversion1 + fConversion2 + fConversion3 + fConversion4
         fRevenue = Sheets(dataSheetName).Cells(rowIndex, 10) * rate
 
+        If Not IsDate(strDate) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是日期格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
+
+        If (Not IsNumeric(fImpression)) Or (Not IsNumeric(fClick)) Or (Not IsNumeric(fCost)) Or (Not IsNumeric(fConversion1)) Or (Not IsNumeric(fConversion2)) Or (Not IsNumeric(fConversion3)) Or (Not IsNumeric(fConversion4)) Or (Not IsNumeric(fRevenue)) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是数字类型格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
+
         If (channelName = strChannel Or channelName = "" Or channelName = "all") Then
             filterFlag = True
         Else
@@ -193,13 +225,13 @@ Sub WriteDailyReport()
             End If
 
             '两周对比数据
-            If IsInWeek(CStr(arrDate(1, 1)), strDate) Then
+            If IsInWeek(CStr(firstDate), strDate) Then
                 Call FillArrayData(twoWeekDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 Call FillArrayData(twoWeekDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
 
             '两天对比数据
-            If CStr(arrDate(1, 1)) = strDate Then
+            If CStr(firstDate) = strDate Then
                 Call FillArrayData(twoDayDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 Call FillArrayData(twoDayDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
@@ -403,7 +435,7 @@ Sub ColumnClusteredChartForDaily()
     rate = Sheets(dataSheetName).Cells(1, 4)
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).[AA65536].End(xlUp).Row
+    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -478,6 +510,10 @@ Sub ColumnClusteredChartForDaily()
         metricFields = Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         Call AddDdlInOneCell(reportName, "K5", "DailyChartMetricOneChange", metricFields, "chartMetricOne", 1)
     Else
+        If Sheets(reportName).Shapes("chartMetricOne").ControlFormat.ListCount = 1 Then
+            Sheets(reportName).Shapes("chartMetricOne").ControlFormat.RemoveAllItems
+            Sheets(reportName).Shapes("chartMetricOne").ControlFormat.AddItem Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
+        End If
         Sheets(reportName).Shapes("chartMetricOne").ControlFormat.ListIndex = 1
     End If
     
@@ -485,6 +521,10 @@ Sub ColumnClusteredChartForDaily()
         metricFields = Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         Call AddDdlInOneCell(reportName, "M5", "DailyChartMetricTwoChange", metricFields, "chartMetricTwo", 2)
     Else
+        If Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.ListCount = 1 Then
+            Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.RemoveAllItems
+            Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.AddItem Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
+        End If
         Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.ListIndex = 2
     End If
     
@@ -511,7 +551,7 @@ Sub PieChartForDaily()
     rate = Sheets(dataSheetName).Cells(1, 4)
     rowCount = 0
     '得到有数据的行，需要清理
-    n = Sheets(reportName).[S65536].End(xlUp).Row
+    n = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
     If n > 1 Then
         Sheets(reportName).Range("S2:Y" & n).ClearContents
     End If
@@ -571,6 +611,10 @@ Sub PieChartForDaily()
         metricFields = Array("Cost", "Conversion", "Revenue")
         Call AddDdlInOneCell(reportName, "C72", "DailyChartMetricThreeChange", metricFields, "chartMetricThree", 1)
     Else
+        If Sheets(reportName).Shapes("chartMetricThree").ControlFormat.ListCount = 1 Then
+            Sheets(reportName).Shapes("chartMetricThree").ControlFormat.RemoveAllItems
+            Sheets(reportName).Shapes("chartMetricThree").ControlFormat.AddItem Array("Cost", "Conversion", "Revenue")
+        End If
         Sheets(reportName).Shapes("chartMetricThree").ControlFormat.ListIndex = 1
     End If
 
@@ -598,7 +642,7 @@ Sub DailyChartDataTypeChange()
     rate = Sheets(dataSheetName).Cells(1, 4)
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).[AA65536].End(xlUp).Row
+    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -618,6 +662,11 @@ Sub DailyChartDataTypeChange()
         '取得数据中的渠道和日期
         cellChannel = arr(i, 1)
         cellDate = arr(i, 2)
+        
+        If Not IsDate(cellDate) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex + 2 & "行数据，必须是日期格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
         
         If (channelName = cellChannel Or channelName = "all") Then
             filterFlag = True
@@ -737,10 +786,12 @@ Sub DailyChartMetricOneChange()
 
     valDDL = ValueDDL("chartMetricOne", reportName)
     
+    jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    
     'source
     For jCol = 28 To 40
         If (Cells(1, jCol) = valDDL) Then
-            srcRng = Cells(2, jCol).Address & ":" & Cells(Sheets(reportName).[AA65536].End(xlUp).Row, jCol).Address
+            srcRng = Cells(2, jCol).Address & ":" & Cells(jRow, jCol).Address
             Exit For
         End If
     Next
@@ -760,17 +811,19 @@ Sub DailyChartMetricTwoChange()
     Dim valDDL As String
     Dim reportName As String
     Dim srcRng As String
-    Dim jCol As Integer
+    Dim jRow As Integer, jCol As Integer
     
     Application.ScreenUpdating = False
     reportName = "Daily"
 
     valDDL = ValueDDL("chartMetricTwo", reportName)
     
+    jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    
     'source
     For jCol = 28 To 40
         If (Cells(1, jCol) = valDDL) Then
-            srcRng = Cells(2, jCol).Address & ":" & Cells(Sheets(reportName).[AA65536].End(xlUp).Row, jCol).Address
+            srcRng = Cells(2, jCol).Address & ":" & Cells(jRow, jCol).Address
             Exit For
         End If
     Next
@@ -790,16 +843,17 @@ Sub DailyChartMetricThreeChange()
     Dim valDDL As String
     Dim reportName As String
     Dim srcRng As String
-    Dim jCol As Integer
+    Dim jRow As Integer, jCol As Integer
     Application.ScreenUpdating = False
     reportName = "Daily"
 
     valDDL = ValueDDL("chartMetricThree", reportName)
     
+    jRow = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
     'source
     For jCol = 20 To 24
         If (Cells(1, jCol) = valDDL) Then
-            srcRng = Cells(2, jCol).Address & ":" & Cells(Sheets(reportName).[S65536].End(xlUp).Row, jCol).Address
+            srcRng = Cells(2, jCol).Address & ":" & Cells(jRow, jCol).Address
             Exit For
         End If
     Next
@@ -821,6 +875,5 @@ Sub TestDailySort()
     
 
 
+
 End Sub
-
-

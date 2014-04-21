@@ -41,7 +41,6 @@ Sub WriteCampaignReport()
     For rowIndex = 3 To totalRowCount
         strDate = Sheets(dataSheetName).Cells(rowIndex, 2)
         If strDate = "" Then Exit For
-
         If Not IsDate(strDate) Then
             MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是日期格式，修正后保存退出，再打开"
             Exit Sub
@@ -66,19 +65,6 @@ Sub WriteCampaignReport()
     '没有数据，清空报表
     If dicMonth.Count = 0 Then
         Call ClearReportData(reportName)
-        If IsShapeExists(reportName, "campaignChart") Then
-            Sheets(reportName).ChartObjects("campaignChart").Delete
-        End If
-        Sheets(reportName).Shapes("ddlCampaignChannel").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlCampaign").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlCampaignChartChannel").ControlFormat.List = ""
-        Sheets(reportName).Shapes("chartMetric1").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlMonthStart").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlMonthEnd").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlWeekStart").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlWeekEnd").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlDayStart").ControlFormat.List = ""
-        Sheets(reportName).Shapes("ddlDayEnd").ControlFormat.List = ""
         Exit Sub
     End If
     
@@ -162,9 +148,7 @@ Sub WriteCampaignReport()
 
         strChannel = Sheets(dataSheetName).Cells(rowIndex, 1)
         strDate = CStr(Sheets(dataSheetName).Cells(rowIndex, 2))
-        
         If strDate = "" Then Exit For
-        
         strCampaign = Sheets(dataSheetName).Cells(rowIndex, 3)
         fImpression = Sheets(dataSheetName).Cells(rowIndex, 4)
         fClick = Sheets(dataSheetName).Cells(rowIndex, 5)
@@ -364,7 +348,7 @@ Sub ChartForCampaign()
     rowCount = 0
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).[AA65536].End(xlUp).Row
+    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -456,7 +440,7 @@ Sub CampaignChartDataTypeChange()
     rate = Sheets(dataSheetName).Cells(1, 4)
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).[AA65536].End(xlUp).Row
+    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -546,16 +530,16 @@ End Sub
 Sub CampaignChartMetricChange()
     Dim valDDL As String, reportName As String
     Dim srcRng As String
-    Dim jCol As Integer
-    
+    Dim jRow As Integer, jCol As Integer
     
     Application.ScreenUpdating = False
     reportName = "Campaign"
     valDDL = ValueDDL("chartMetric1", reportName)
+    jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
     
     For jCol = 28 To 40
         If (Cells(1, jCol) = valDDL) Then
-            srcRng = Cells(2, jCol).Address & ":" & Cells(Sheets(reportName).[AA65536].End(xlUp).Row, jCol).Address
+            srcRng = Cells(2, jCol).Address & ":" & Cells(jRow, jCol).Address
             Exit For
         End If
     Next
