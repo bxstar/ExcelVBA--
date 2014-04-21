@@ -10,7 +10,7 @@ Sub WriteCampaignReport()
     '定义计划数据
     Dim arrCampaigns As Variant
     '定义日期数组
-    Dim arrDate As Variant
+    Dim arrDate As Variant, firstDate As Variant
     '定义多维数组，存放对比的两个月的汇总数据
     Dim twoMonthDataArr(1 To 28, 1 To 2)
     '定义多维数组，存放对比的两周的汇总数据
@@ -41,6 +41,12 @@ Sub WriteCampaignReport()
     For rowIndex = 3 To totalRowCount
         strDate = Sheets(dataSheetName).Cells(rowIndex, 2)
         If strDate = "" Then Exit For
+
+        If Not IsDate(strDate) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是日期格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
+        
         strYearMonth = CStr(Year(strDate)) & "/" & CStr(Month(strDate))
         
         If twoMonthArr(1) = "" Then
@@ -56,6 +62,25 @@ Sub WriteCampaignReport()
         
         If dicMonth(strYearMonth) = "" Then dicMonth(strYearMonth) = 1
     Next
+    
+    '没有数据，清空报表
+    If dicMonth.Count = 0 Then
+        Call ClearReportData(reportName)
+        If IsShapeExists(reportName, "campaignChart") Then
+            Sheets(reportName).ChartObjects("campaignChart").Delete
+        End If
+        Sheets(reportName).Shapes("ddlCampaignChannel").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlCampaign").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlCampaignChartChannel").ControlFormat.List = ""
+        Sheets(reportName).Shapes("chartMetric1").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlMonthStart").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlMonthEnd").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlWeekStart").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlWeekEnd").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlDayStart").ControlFormat.List = ""
+        Sheets(reportName).Shapes("ddlDayEnd").ControlFormat.List = ""
+        Exit Sub
+    End If
     
     If twoMonthArr(2) = "" Then twoMonthArr(2) = twoMonthArr(1)
     
@@ -95,6 +120,18 @@ Sub WriteCampaignReport()
     Sheets(reportName).Shapes("ddlMonthEnd").OnAction = "DDLCampaignChannelChanged"
 
     arrDate = DDLSourceFromDataColumn("B", dataSheetName, False, 3)
+    
+    If IsDate(arrDate) Then
+    '只有一行数据，构造数组用于绑定列表
+        firstDate = arrDate
+        arrDate = Array(Array(arrDate))
+    ElseIf IsArray(arrDate) Then
+        firstDate = arrDate(1, 1)
+    Else
+        MsgBox "元数据日期列格式不对"
+        Exit Sub
+    End If
+    
     '一周开始日期列表
     Sheets(reportName).Shapes("ddlWeekStart").ControlFormat.RemoveAllItems
     Sheets(reportName).Shapes("ddlWeekStart").ControlFormat.AddItem arrDate
@@ -139,6 +176,16 @@ Sub WriteCampaignReport()
         fConversion = fConversion1 + fConversion2 + fConversion3 + fConversion4
         fRevenue = Sheets(dataSheetName).Cells(rowIndex, 11) * rate
 
+        If Not IsDate(strDate) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是日期格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
+
+        If (Not IsNumeric(fImpression)) Or (Not IsNumeric(fClick)) Or (Not IsNumeric(fCost)) Or (Not IsNumeric(fConversion1)) Or (Not IsNumeric(fConversion2)) Or (Not IsNumeric(fConversion3)) Or (Not IsNumeric(fConversion4)) Or (Not IsNumeric(fRevenue)) Then
+            MsgBox "请检查""" & dataSheetName & """第" & rowIndex & "行数据，必须是数字类型格式，修正后保存退出，再打开"
+            Exit Sub
+        End If
+
         If (channelName = strChannel Or channelName = "" Or channelName = "all") And (campaignName = strCampaign Or campaignName = "" Or campaignName = "all") Then
             filterFlag = True
         Else
@@ -156,13 +203,13 @@ Sub WriteCampaignReport()
             End If
 
             '两周对比数据
-            If IsInWeek(CStr(arrDate(1, 1)), strDate) Then
+            If IsInWeek(CStr(firstDate), strDate) Then
                 Call FillArrayData(twoWeekDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 Call FillArrayData(twoWeekDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
 
             '两天对比数据
-            If CStr(arrDate(1, 1)) = strDate Then
+            If CStr(firstDate) = strDate Then
                 Call FillArrayData(twoDayDataArr, 1, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
                 Call FillArrayData(twoDayDataArr, 2, fImpression, fClick, fConversion1, fConversion2, fConversion3, fConversion4, fConversion, fCost, fRevenue)
             End If
@@ -378,6 +425,10 @@ Sub ChartForCampaign()
         metricFields = Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         Call AddDdlInOneCell(reportName, "H5", "CampaignChartMetricChange", metricFields, "chartMetric1", 1)
     Else
+        If Sheets(reportName).Shapes("chartMetric1").ControlFormat.ListCount = 1 Then
+            Sheets(reportName).Shapes("chartMetric1").ControlFormat.RemoveAllItems
+            Sheets(reportName).Shapes("chartMetric1").ControlFormat.AddItem Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
+        End If
         Sheets(reportName).Shapes("chartMetric1").ControlFormat.ListIndex = 1
     End If
     
@@ -420,7 +471,7 @@ Sub CampaignChartDataTypeChange()
     n = Sheets(dataSheetName).[A65536].End(xlUp).Row
     arr = Sheets(dataSheetName).Range("A3:K" & n)
     
-    For i = 1 To UBound(arr)
+    For i = 3 To UBound(arr)
         '取得数据中的渠道
         cellChannel = arr(i, 1)
         
@@ -550,6 +601,11 @@ Sub DDLChannelChanged()
             End If
         End If
     Next
+    
+    '没有数据，退出
+    If dicCampaign.Count = 0 Then
+        Exit Sub
+    End If
     
     arrCampaigns = dicCampaign.keys
     
