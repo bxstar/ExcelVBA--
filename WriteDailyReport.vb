@@ -435,7 +435,11 @@ Sub ColumnClusteredChartForDaily()
     rate = Sheets(dataSheetName).Cells(1, 4)
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -502,10 +506,23 @@ Sub ColumnClusteredChartForDaily()
     '设置系列值
     ActiveSheet.ChartObjects("dailyChart").Activate
     ActiveChart.SeriesCollection(1).name = "Imp"
+    
+    If ActiveChart.SeriesCollection.Count = 1 Then
+        ActiveChart.SeriesCollection.NewSeries
+    End If
     ActiveChart.SeriesCollection(2).name = "Clicks"
     
     ActiveChart.ChartTitle.text = "By Month"
     
+    ActiveChart.SeriesCollection(1).XValues = "=" & reportName & "!$AA$2:$AA$" & (rowCount + 1)
+    ActiveChart.SeriesCollection(1).Values = "=" & reportName & "!$AP$2:$AP$" & (rowCount + 1)
+    
+    ActiveChart.SeriesCollection(2).XValues = "=" & reportName & "!$AA$2:$AA$" & (rowCount + 1)
+    ActiveChart.SeriesCollection(2).Values = "=" & reportName & "!$AQ$2:$AQ$" & (rowCount + 1)
+    '设置第二个指标使用折线显示
+    Call SecondaryAxis(reportName, "dailyChart")
+    
+    '图形选项设置
     If Not IsShapeExists(reportName, "chartMetricOne") Then
         metricFields = Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         Call AddDdlInOneCell(reportName, "K5", "DailyChartMetricOneChange", metricFields, "chartMetricOne", 1)
@@ -551,7 +568,11 @@ Sub PieChartForDaily()
     rate = Sheets(dataSheetName).Cells(1, 4)
     rowCount = 0
     '得到有数据的行，需要清理
-    n = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[S65536].End(xlUp).Row > 1 Then
+        n = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     If n > 1 Then
         Sheets(reportName).Range("S2:Y" & n).ClearContents
     End If
@@ -642,7 +663,11 @@ Sub DailyChartDataTypeChange()
     rate = Sheets(dataSheetName).Cells(1, 4)
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -786,7 +811,11 @@ Sub DailyChartMetricOneChange()
 
     valDDL = ValueDDL("chartMetricOne", reportName)
     
-    jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     
     'source
     For jCol = 28 To 40
@@ -818,7 +847,11 @@ Sub DailyChartMetricTwoChange()
 
     valDDL = ValueDDL("chartMetricTwo", reportName)
     
-    jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     
     'source
     For jCol = 28 To 40
@@ -849,7 +882,11 @@ Sub DailyChartMetricThreeChange()
 
     valDDL = ValueDDL("chartMetricThree", reportName)
     
-    jRow = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[S65536].End(xlUp).Row > 1 Then
+        jRow = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     'source
     For jCol = 20 To 24
         If (Cells(1, jCol) = valDDL) Then

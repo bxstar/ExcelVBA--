@@ -348,7 +348,11 @@ Sub ChartForCampaign()
     rowCount = 0
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -440,7 +444,11 @@ Sub CampaignChartDataTypeChange()
     rate = Sheets(dataSheetName).Cells(1, 4)
     
     '得到有数据的行，需要清理
-    n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
     End If
@@ -535,7 +543,12 @@ Sub CampaignChartMetricChange()
     Application.ScreenUpdating = False
     reportName = "Campaign"
     valDDL = ValueDDL("chartMetric1", reportName)
-    jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    
+    If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
+        jRow = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
+    Else
+        Exit Sub
+    End If
     
     For jCol = 28 To 40
         If (Cells(1, jCol) = valDDL) Then

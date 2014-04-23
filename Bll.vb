@@ -228,6 +228,11 @@ Sub ClearReportData(sheetName As String)
         If IsShapeExists(sheetName, "dailyChart") Then
             Sheets(sheetName).ChartObjects("dailyChart").Delete
         End If
+        
+        If IsShapeExists(sheetName, "PieDailyChart") Then
+            Sheets(sheetName).ChartObjects("PieDailyChart").Delete
+        End If
+        
         Sheets(sheetName).Shapes("ddlDailyChannel").ControlFormat.List = ""
         Sheets(sheetName).Shapes("ddlDailyChartChannel").ControlFormat.List = ""
         Sheets(sheetName).Shapes("chartDataType").ControlFormat.List = ""
