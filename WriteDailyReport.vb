@@ -437,8 +437,6 @@ Sub ColumnClusteredChartForDaily()
     '得到有数据的行，需要清理
     If Sheets(reportName).[AA65536].End(xlUp).Row > 1 Then
         n = Sheets(reportName).Range("AA:AA").SpecialCells(xlCellTypeConstants).Rows.Count
-    Else
-        Exit Sub
     End If
     If n > 1 Then
         Sheets(reportName).Range("AA2:AQ" & n).ClearContents
@@ -570,8 +568,6 @@ Sub PieChartForDaily()
     '得到有数据的行，需要清理
     If Sheets(reportName).[S65536].End(xlUp).Row > 1 Then
         n = Sheets(reportName).Range("S:S").SpecialCells(xlCellTypeConstants).Rows.Count
-    Else
-        Exit Sub
     End If
     If n > 1 Then
         Sheets(reportName).Range("S2:Y" & n).ClearContents
