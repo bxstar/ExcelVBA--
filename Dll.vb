@@ -84,39 +84,34 @@ Function DDLSourceFromDataColumn(column As String, dataSheet As Variant, sort As
         If (VarType(src) = vbString) Then
             DDLSourceFromDataColumn = Array(src)
         Else
-        DDLSourceFromDataColumn = src
+            DDLSourceFromDataColumn = src
         End If
-    Else: DDLSourceFromDataColumn = Array("")
+    Else
+        DDLSourceFromDataColumn = Array("")
     End If
-'    Else: ddlSourceFromDataColumn = Array()
-'    End If
-'    Worksheets(reportSheet).Activate
-'    Shapes(ddlName).ControlFormat.List = src
-    'Application.DisplayAlerts = False
-    'Sheets("tmp").Delete
     Sheets("tmp").Visible = False
     Sheets(dataSheet).Select
     Range("A1").Select
-    'Application.Dis
 End Function
 
 Function ArrayDataIndex(arr As Variant, data As Variant) As Integer
-'获取数据在数组中的索引号
+'获取数据在数组中的索引号，从0开始，未找到返回-1
 Dim i As Integer
-    For i = 1 To UBound(arr)
+    For i = 0 To UBound(arr)
         If arr(i) = data Then
             ArrayDataIndex = i
-            Exit For
+            Exit Function
         End If
     Next i
+    ArrayDataIndex = -1
 End Function
 
 Function AddValue(data As Variant, add As Variant) As Variant
 '在可能为空的数字类型上增加
     If data = "" Then
-        AddValue = add
+        If IsNumeric(add) Then AddValue = add
     Else
-        AddValue = data + add
+        If IsNumeric(add) Then AddValue = data + add
     End If
 
 End Function
