@@ -1,9 +1,16 @@
 Private Sub Workbook_Open()
 '定义工作簿是否被修改
-    Dim isChangeDaily As Boolean, isChangeCampaign As Boolean
+    
+    'Daily的源数据表是否被修改
+    Dim isChangeDaily As Boolean
+    'Campaign的源数据表是否被修改
+    Dim isChangeCampaign As Boolean
+    'Channel对应表是否被修改
+    Dim isChangeChannelRelation
     
     isChangeDaily = FunIsChangeDaily()
     isChangeCampaign = FunIsChangeCampaign()
+    isChangeChannelRelation = FunIsChangeChannelRelation()
     
     If isChangeDaily Then
         
@@ -12,6 +19,13 @@ Private Sub Workbook_Open()
         Call WriteDailyReport
         Call WriteChannelReport
         Sheets("tmp").Range("I2") = 0
+        Sheets("tmp").Range("I4") = 0
+    Else
+        If isChangeChannelRelation Then
+        'Channel对应表被修改
+            Call WriteChannelReport
+            Sheets("tmp").Range("I4") = 0
+        End If
     End If
     
     If isChangeCampaign Then
@@ -51,6 +65,16 @@ Function FunIsChangeCampaign() As Boolean
         FunIsChangeCampaign = True
     Else
         FunIsChangeCampaign = False
+    End If
+
+End Function
+
+Function FunIsChangeChannelRelation() As Boolean
+'Channel对应表是否被修改
+    If Sheets("tmp").Range("I4") = 1 Then
+        FunIsChangeChannelRelation = True
+    Else
+        FunIsChangeChannelRelation = False
     End If
 
 End Function

@@ -24,22 +24,22 @@ Sub BasicDesign(sheetName As String, EndColumn As String, Optional EndRow As Int
     ActiveWindow.DisplayGridlines = False
     Sheets(sheetName).Range("A1").Select
 End Sub
-Sub AddBorderWithColor(sheetName As String, Range As String, R As Integer, G As Integer, B As Integer)
+Sub AddBorderWithColor(sheetName As String, Range As String, R As Integer, G As Integer, b As Integer)
 '
 'the function get range that you want to add border and RGB paramatrs of the color
 '
      Sheets(sheetName).Range(Range).Select
-     Selection.Borders(xlEdgeLeft).color = RGB(R, G, B)
-     Selection.Borders(xlEdgeTop).color = RGB(R, G, B)
-     Selection.Borders(xlEdgeBottom).color = RGB(R, G, B)
-     Selection.Borders(xlEdgeRight).color = RGB(R, G, B)
-     Selection.Borders(xlInsideVertical).color = RGB(R, G, B)
-     Selection.Borders(xlInsideHorizontal).color = RGB(R, G, B)
+     Selection.Borders(xlEdgeLeft).color = RGB(R, G, b)
+     Selection.Borders(xlEdgeTop).color = RGB(R, G, b)
+     Selection.Borders(xlEdgeBottom).color = RGB(R, G, b)
+     Selection.Borders(xlEdgeRight).color = RGB(R, G, b)
+     Selection.Borders(xlInsideVertical).color = RGB(R, G, b)
+     Selection.Borders(xlInsideHorizontal).color = RGB(R, G, b)
 End Sub
-Sub AddColor(sheetName As String, Range As String, R As Integer, G As Integer, B As Integer)
+Sub AddColor(sheetName As String, Range As String, R As Integer, G As Integer, b As Integer)
     ' the function get range to paint in RGB colors
     Sheets(sheetName).Range(Range).Select
-    Selection.Interior.color = RGB(R, G, B)
+    Selection.Interior.color = RGB(R, G, b)
 End Sub
 Sub AddProperties(sheetName As String)
     'the function give the properties of the report
@@ -166,10 +166,10 @@ Sub MergeCells(sheetName As String, rng As String)
     Range(rng).Merge
 End Sub
 
-Sub ColorToFont(sheetNm As String, rng As String, R As Integer, G As Integer, B As Integer)
+Sub ColorToFont(sheetNm As String, rng As String, R As Integer, G As Integer, b As Integer)
     Sheets(sheetNm).Activate
     Range(rng).Select
-    Selection.font.color = RGB(R, G, B)
+    Selection.font.color = RGB(R, G, b)
 End Sub
 Sub AddPropertiesGenericDesign(sheetName As String, RangeToBold As String)
    Sheets(sheetName).Range("C5") = "Report Name"
