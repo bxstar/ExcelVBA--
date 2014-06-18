@@ -106,6 +106,18 @@ Dim i As Integer
     ArrayDataIndex = -1
 End Function
 
+Function CollectionDataIndex(coll As Collection, data As Variant) As Integer
+'获取数据在集合中的索引号，为保持和ArrayDataIndex函数一致性，返回值从0开始，未找到返回-1
+Dim i As Integer
+    For i = 1 To coll.Count
+        If coll(i) = data Then
+            CollectionDataIndex = i - 1
+            Exit Function
+        End If
+    Next i
+    CollectionDataIndex = -1
+End Function
+
 Function AddValue(data As Variant, add As Variant) As Variant
 '在可能为空的数字类型上增加
     If data = "" Then
@@ -291,3 +303,74 @@ Function CollectionToArray(coll As Collection)
 
 End Function
 
+Function ArraySort(a, ByVal keyCol As Integer, af As Integer)
+'二维数组排序，返回的结果结构和原来一样，但是值都是string型的
+  Dim Row As Long
+    Dim Col As Long
+    Dim idx() As String    '存放需要排序的列
+    Dim index() As String    '存放一个索引.方便操作其他非排序列
+    Dim i As Long
+    Dim j As Long
+    Dim b() As String    '一个过渡的二维数组.
+    '初始化
+    Row = UBound(a, 1)
+    Col = UBound(a, 2)
+    ReDim b(1 To Row, 1 To Col)
+    ReDim idx(Row)
+    ReDim index(Row)
+    '初始化排序的列的数组,及索引数组
+    For i = 1 To Row
+        idx(i) = a(i, keyCol)
+        index(i) = i
+    Next
+    '根据排列的数组对索引列排序
+    '使用快速排序法
+    QkSort idx, 0, Row, index
+    '整个二维数组,根据索引进行排序.
+    For j = 1 To Col
+        For i = 1 To Row
+        If af = 1 Then b(i, j) = a(index(i), j)
+         If af = 2 Then b(i, j) = a(index(Row + 1 - i), j)
+        Next
+    Next
+    For i = 1 To Row
+        For j = 1 To Col
+            a(i, j) = b(i, j)
+        Next
+    Next
+    FDSort = a
+End Function
+
+Sub QkSort(Ay() As String, Io As Long, Jo As Long, index() As String)
+'升序快速排序法，Ay()只能传入一维数组
+'index()传入一维数组，注意：数组上标一定要和AY()一样
+    Dim i As Long, j As Long, X As String, tp As String
+    Dim bQ As Boolean    'i到j跳跃开关
+    '初始化
+    i = Io
+    j = Jo
+    X = Ay(i)
+    '一轮排序
+    Do While i < j
+        If Not bQ Then
+            If Ay(j) < X Then
+                tp = Ay(j): Ay(j) = Ay(i): Ay(i) = tp
+                tp = index(j): index(j) = index(i): index(i) = tp
+                bQ = True
+            Else
+                j = j - 1
+            End If
+        Else
+            If Ay(i) > X Then
+                tp = Ay(j): Ay(j) = Ay(i): Ay(i) = tp
+                tp = index(j): index(j) = index(i): index(i) = tp
+                bQ = False
+            Else
+                i = i + 1
+            End If
+        End If
+    Loop
+    '递归
+    If i < Jo Then QkSort Ay, j + 1, Jo, index    '注意靠后的要加1
+    If Io < j Then QkSort Ay, Io, i, index
+End Sub
