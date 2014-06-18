@@ -3,7 +3,7 @@ Sub WriteChannelReport()
 
     Dim dataSheetName As String, reportName As String
     Dim cellChannel As String, cellDate As String
-    Dim rowIndex As Integer, colIndex As Integer, i As Integer, j As Integer, rowCount As Integer
+    Dim rowIndex As Integer, colIndex As Integer, i As Integer, j As Integer, rowCount As Integer, dataRowBeginIndex As Integer, dataRowEndIndex As Integer, groupRowCount As Integer
     '定义字典，Channel和Metirc
     Dim dicChannel As Variant, dicMetricData As Variant
     '是否符合channel条件的数据
@@ -23,11 +23,15 @@ Sub WriteChannelReport()
     rate = Sheets(dataSheetName).Cells(1, 4)
     currencyFormat = Sheets(dataSheetName).Cells(1, 4).NumberFormatLocal
     
+    '设置报表数据正常的开始和结束行，不包括渠道汇总
+    dataRowBeginIndex = 12
+    dataRowEndIndex = 32
+    
     '设置单元格所在列格式
-    Sheets(reportName).Range("E12:E32").NumberFormatLocal = currencyFormat
-    Sheets(reportName).Range("G12:G32").NumberFormatLocal = currencyFormat
-    Sheets(reportName).Range("M12:Q32").NumberFormatLocal = currencyFormat
-    Sheets(reportName).Range("W12:W32").NumberFormatLocal = currencyFormat
+    Sheets(reportName).Range("E" & dataRowBeginIndex & ":E" & dataRowEndIndex).NumberFormatLocal = currencyFormat
+    Sheets(reportName).Range("G" & dataRowBeginIndex & ":G" & dataRowEndIndex).NumberFormatLocal = currencyFormat
+    Sheets(reportName).Range("M" & dataRowBeginIndex & ":Q" & dataRowEndIndex).NumberFormatLocal = currencyFormat
+    Sheets(reportName).Range("W" & dataRowBeginIndex & ":W" & dataRowEndIndex).NumberFormatLocal = currencyFormat
     
     arrDate = DDLSourceFromDataColumn("B", dataSheetName, False, 3)
     
@@ -53,11 +57,19 @@ Sub WriteChannelReport()
     Sheets(reportName).Shapes("ddlDayEnd").ControlFormat.ListIndex = UBound(arrDate)
     Sheets(reportName).Shapes("ddlDayEnd").OnAction = "DDLChannelDayChanged"
     
+    '删除由于渠道汇总所插入的行
+    n = Sheets(reportName).UsedRange.Rows.Count
+    groupRowCount = n - dataRowEndIndex
+    For i = 1 To groupRowCount
+        Sheets(reportName).Rows(dataRowBeginIndex).Delete
+    Next
+    
     '清理原始内容
-    Sheets(reportName).Range("B12:B31").ClearContents
-    Sheets(reportName).Range("C12:X32").ClearContents
-    For rowIndex = 12 To 31
+    Sheets(reportName).Range("B" & dataRowBeginIndex & ":B" & CStr(dataRowEndIndex - 1)).ClearContents
+    Sheets(reportName).Range("C" & dataRowBeginIndex & ":X" & dataRowEndIndex).ClearContents
+    For rowIndex = dataRowBeginIndex To dataRowEndIndex - 1
         Sheets(reportName).Rows(rowIndex).EntireRow.Hidden = False
+        Sheets(reportName).Rows(rowIndex).EntireRow.Interior.ColorIndex = xlNone
     Next
     
     '源表中得到有数据的行
@@ -101,10 +113,13 @@ Sub WriteChannelReport()
         
     Next
 
-    arrChannel = dicChannel.keys
+    arrChannel = dicChannel.Keys
     
-    '重定义多渠道数据数组，由于arrChannel索引从0开始，所以加1
-    ReDim arrMutilChannelData(1 To UBound(arrChannel) + 1, 1 To 23)
+    '按照Channel对应表汇总排序arrChannel
+    Call SortBySubChannel(arrChannel)
+    
+    '重定义多渠道数据数组
+    ReDim arrMutilChannelData(1 To rowCount, 1 To 23)
     
     For i = 1 To rowCount
         arrMutilChannelData(i, 1) = arrChannel(i - 1)
@@ -137,19 +152,22 @@ Sub WriteChannelReport()
     Call ComMutilChannelData(arrMutilChannelData)
     
     '填充明细数据
-    Call FillCellData(reportName, 12, 2, arrMutilChannelData)
+    Call FillCellData(reportName, dataRowBeginIndex, 2, arrMutilChannelData)
     
     '计算汇总指标数据
     Call ComMutilChannelData(sumMutilChannelData)
     
     '填充汇总数据
-    sumMutilChannelData(1, 1) = Sheets(reportName).Cells(32, 2)
-    Call FillCellData(reportName, 32, 2, sumMutilChannelData)
+    sumMutilChannelData(1, 1) = Sheets(reportName).Cells(dataRowEndIndex, 2)
+    Call FillCellData(reportName, dataRowEndIndex, 2, sumMutilChannelData)
     
     '隐藏没有数据的行
-    For rowIndex = 12 + rowCount To 31
+    For rowIndex = dataRowBeginIndex + rowCount To dataRowEndIndex - 1
         Sheets(reportName).Rows(rowIndex).EntireRow.Hidden = True
     Next
+    
+    '分组汇总
+    Call InsertGroupSubChannel
     
     '报表页选中
     Sheets(reportName).Activate
@@ -161,7 +179,7 @@ Sub DDLChannelDayChanged()
     Dim startDate As Variant, endDate As Variant
     Dim dataSheetName As String, reportName As String
     Dim cellChannel As String, cellDate As String
-    Dim rowIndex As Integer, colIndex As Integer, i As Integer, j As Integer, rowCount As Integer
+    Dim rowIndex As Integer, colIndex As Integer, i As Integer, j As Integer, rowCount As Integer, dataRowBeginIndex As Integer, dataRowEndIndex As Integer, groupRowCount As Integer
     '定义字典，Channel和Metirc
     Dim dicChannel As Variant, dicMetricData As Variant
     '是否符合channel条件的数据
@@ -177,6 +195,10 @@ Sub DDLChannelDayChanged()
     dataSheetName = "Daily元数据"
     reportName = "Channel"
     
+    '设置报表数据正常的开始和结束行，不包括渠道汇总
+    dataRowBeginIndex = 12
+    dataRowEndIndex = 32
+    
     '汇率及货币格式
     rate = Sheets(dataSheetName).Cells(1, 4)
     
@@ -188,9 +210,20 @@ Sub DDLChannelDayChanged()
         Exit Sub
     End If
     
-    '清理原始内容
-    Sheets(reportName).Range("B12:B31").ClearContents
-    Sheets(reportName).Range("C12:X32").ClearContents
+    '删除由于渠道汇总所插入的行
+    n = Sheets(reportName).UsedRange.Rows.Count
+    groupRowCount = n - dataRowEndIndex
+    For i = 1 To groupRowCount
+        Sheets(reportName).Rows(dataRowBeginIndex).Delete
+    Next
+    
+    '清理原始内容，背景色，隐藏取消
+    Sheets(reportName).Range("B" & dataRowBeginIndex & ":B" & CStr(dataRowEndIndex - 1)).ClearContents
+    Sheets(reportName).Range("C" & dataRowBeginIndex & ":X" & dataRowEndIndex).ClearContents
+    For rowIndex = dataRowBeginIndex To dataRowEndIndex - 1
+        Sheets(reportName).Rows(rowIndex).EntireRow.Hidden = False
+        Sheets(reportName).Rows(rowIndex).EntireRow.Interior.ColorIndex = xlNone
+    Next
     
     '源表中得到有数据的行
     n = Sheets(dataSheetName).[A65536].End(xlUp).Row
@@ -230,10 +263,13 @@ Sub DDLChannelDayChanged()
         End If
     Next
 
-    arrChannel = dicChannel.keys
+    arrChannel = dicChannel.Keys
     
-    '重定义多渠道数据数组，由于arrChannel索引从0开始，所以加1
-    ReDim arrMutilChannelData(1 To UBound(arrChannel) + 1, 1 To 23)
+    '按照Channel对应表汇总排序arrChannel
+    Call SortBySubChannel(arrChannel)
+    
+    '重定义多渠道数据数组
+    ReDim arrMutilChannelData(1 To rowCount, 1 To 23)
     
     For i = 1 To rowCount
         arrMutilChannelData(i, 1) = arrChannel(i - 1)
@@ -272,10 +308,19 @@ Sub DDLChannelDayChanged()
     Call ComMutilChannelData(sumMutilChannelData)
     
     '填充汇总数据
-    sumMutilChannelData(1, 1) = Sheets(reportName).Cells(32, 2)
-    Call FillCellData(reportName, 32, 2, sumMutilChannelData)
+    sumMutilChannelData(1, 1) = Sheets(reportName).Cells(dataRowEndIndex, 2)
+    Call FillCellData(reportName, dataRowEndIndex, 2, sumMutilChannelData)
 
-
+    '隐藏没有数据的行
+    For rowIndex = dataRowBeginIndex + rowCount To dataRowEndIndex - 1
+        Sheets(reportName).Rows(rowIndex).EntireRow.Hidden = True
+    Next
+    
+    '分组汇总
+    Call InsertGroupSubChannel
+    
+    '报表页选中
+    Sheets(reportName).Activate
 
 End Sub
 
@@ -341,3 +386,174 @@ Sub ComMutilChannelData(arrData As Variant)
 
 End Sub
 
+Sub SortBySubChannel(ByRef arrChannel As Variant)
+'排序
+    Dim dicChannel As Object, dicSubChannel As Object, i As Integer, j As Integer, arrSortChannel As Variant
+    Dim dataSheetName As String, n As Integer, arr As Variant, rowCount As Integer, colIndex As Integer
+    '大渠道下的小渠道
+    Dim subChannelArr As Variant, subChannelCount As Integer, v As Variant, mainChannelCount As Integer
+    '小渠道集合
+    Dim collSubChannel As New Collection
+    
+    dataSheetName = "Channel对应表"
+    '渠道名称字典
+    Set dicChannel = CreateObject("Scripting.Dictionary")
+    Set dicSubChannel = CreateObject("Scripting.Dictionary")
+    
+    '源表中得到有数据的行
+    n = Sheets(dataSheetName).[A65536].End(xlUp).Row
+    arr = Sheets(dataSheetName).Range("A2:B" & n)
+
+    '源表中得到有数据的行
+    For i = 1 To UBound(arr)
+        '取得数据中的渠道
+        cellChannel = arr(i, 1)
+        If dicChannel(cellChannel) = "" Then
+            dicChannel(cellChannel) = arr(i, 2)
+            rowCount = rowCount + 1
+        Else
+            subChannelArr = Split(dicChannel(cellChannel), ",")
+            subChannelIndex = ArrayDataIndex(subChannelArr, arr(i, 2))
+            If subChannelIndex = -1 Then
+                dicChannel(cellChannel) = dicChannel(cellChannel) & "," & arr(i, 2)
+            End If
+        End If
+    Next
+    
+    If dicChannel.Count = 0 Then Exit Sub
+    
+    '获取主渠道下的所有子渠道
+    v = dicChannel.Items
+    
+    For i = 0 To dicChannel.Count - 1
+        subChannelArr = Split(v(i), ",")
+        For j = 0 To UBound(subChannelArr)
+            dicSubChannel(subChannelArr(j)) = 1
+            collSubChannel.add subChannelArr(j)
+        Next
+    Next
+    
+    If collSubChannel.Count = 0 Then Exit Sub
+    
+    '渠道的数量，数组从0开始所以加1
+    subChannelCount = UBound(arrChannel) + 1
+    
+    '重定义一个二维数组，用于排序
+    ReDim arrSortChannel(1 To subChannelCount, 1 To 2)
+    
+    For i = 1 To subChannelCount
+        arrSortChannel(i, 1) = arrChannel(i - 1)
+        colIndex = CollectionDataIndex(collSubChannel, arrChannel(i - 1))
+        If colIndex <> -1 Then
+            arrSortChannel(i, 2) = colIndex
+        Else
+            arrSortChannel(i, 2) = 999
+        End If
+    Next
+    
+    '渠道按Channel对应表的渠道排序
+    Call ArraySort(arrSortChannel, 2, 1)
+    
+    For i = 1 To subChannelCount
+        arrChannel(i - 1) = arrSortChannel(i, 1)
+    Next
+    
+    
+    
+    Set dicChannel = Nothing
+    Set dicSubChannel = Nothing
+End Sub
+
+
+Sub InsertGroupSubChannel()
+'插入子渠道分组汇总
+    Dim dicChannel As Object, dicSubChannel As Object, i As Integer, j As Integer, arrSortChannel As Variant
+    Dim reportName As String, dataSheetName As String, n As Integer, arr As Variant, rowCount As Integer, colIndex As Integer
+    '大渠道下的小渠道
+    Dim subChannelArr As Variant, subChannelCount As Integer, k As Variant, v As Variant, mainChannelCount As Integer
+    '小渠道集合
+    Dim collSubChannel As New Collection
+    '大渠道下的最后一个子渠道
+    Dim lastSubChannel As String, lastSubChannelIndex As Integer
+    '汇总数据开始行
+    Dim dataRowBeginIndex As Integer, dataRowEndIndex As Integer, groupDataRowIndex As Integer, dataRowCount As Integer, groupChannelData As Variant
+    
+    reportName = "Channel"
+    dataSheetName = "Channel对应表"
+    '渠道名称字典
+    Set dicChannel = CreateObject("Scripting.Dictionary")
+    Set dicSubChannel = CreateObject("Scripting.Dictionary")
+    
+    '源表中得到有数据的行
+    n = Sheets(dataSheetName).[A65536].End(xlUp).Row
+    arr = Sheets(dataSheetName).Range("A2:B" & n)
+
+    '源表中得到有数据的行
+    For i = 1 To UBound(arr)
+        '取得数据中的渠道
+        cellChannel = arr(i, 1)
+        If dicChannel(cellChannel) = "" Then
+            dicChannel(cellChannel) = arr(i, 2)
+            rowCount = rowCount + 1
+        Else
+            subChannelArr = Split(dicChannel(cellChannel), ",")
+            subChannelIndex = ArrayDataIndex(subChannelArr, arr(i, 2))
+            If subChannelIndex = -1 Then
+                dicChannel(cellChannel) = dicChannel(cellChannel) & "," & arr(i, 2)
+            End If
+        End If
+    Next
+    
+    If dicChannel.Count = 0 Then Exit Sub
+
+    '获取主渠道下的所有子渠道
+    v = dicChannel.Items
+    k = dicChannel.Keys
+    dataRowBeginIndex = 12
+    dataRowEndIndex = 32
+    '报表页选中
+    Sheets(reportName).Activate
+    
+    For i = 0 To dicChannel.Count - 1
+        subChannelArr = Split(v(i), ",")
+        dataRowCount = dataRowCount + UBound(subChannelArr) + 1
+        groupDataRowIndex = dataRowBeginIndex + dataRowCount
+
+        '插入汇总行
+        ActiveSheet.Rows(groupDataRowIndex).Insert Shift:=xlDown
+        
+        
+        '设置背景色
+        ActiveSheet.Range("A" & groupDataRowIndex & ":Y" & groupDataRowIndex).Interior.ColorIndex = Sheets(dataSheetName).Cells(1, 1).Interior.ColorIndex
+        
+        '计算汇总值
+        ReDim groupChannelData(1, 1 To 23)
+        
+        '分组汇总标题，由组名+Total
+        groupChannelData(1, 1) = k(i) & ActiveSheet.Cells(dataRowEndIndex + i + 1, 2)
+        For j = groupDataRowIndex - 1 - UBound(subChannelArr) To groupDataRowIndex - 1
+            groupChannelData(1, 2) = groupChannelData(1, 2) + ActiveSheet.Cells(j, 3)
+            groupChannelData(1, 3) = groupChannelData(1, 3) + ActiveSheet.Cells(j, 4)
+            groupChannelData(1, 4) = groupChannelData(1, 4) + ActiveSheet.Cells(j, 5)
+            groupChannelData(1, 7) = groupChannelData(1, 7) + ActiveSheet.Cells(j, 8)
+            groupChannelData(1, 8) = groupChannelData(1, 8) + ActiveSheet.Cells(j, 9)
+            groupChannelData(1, 9) = groupChannelData(1, 9) + ActiveSheet.Cells(j, 10)
+            groupChannelData(1, 10) = groupChannelData(1, 10) + ActiveSheet.Cells(j, 11)
+            groupChannelData(1, 11) = groupChannelData(1, 11) + ActiveSheet.Cells(j, 12)
+            groupChannelData(1, 22) = groupChannelData(1, 22) + ActiveSheet.Cells(j, 23)
+        Next
+        
+        '计算分组汇总指标数据
+        Call ComMutilChannelData(groupChannelData)
+        
+        '填充分组汇总
+        Call FillCellData(reportName, groupDataRowIndex, 2, groupChannelData)
+        
+        '已经增加的数据
+        dataRowCount = dataRowCount + 1
+    Next
+    
+    
+    Set dicChannel = Nothing
+    Set dicSubChannel = Nothing
+End Sub
