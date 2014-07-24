@@ -6,11 +6,14 @@ Private Sub Workbook_Open()
     'Campaign的源数据表是否被修改
     Dim isChangeCampaign As Boolean
     'Channel对应表是否被修改
-    Dim isChangeChannelRelation
+    Dim isChangeChannelRelation As Boolean
+    '配置表是否被修改
+    Dim isChangeSetUp As Boolean
     
     isChangeDaily = FunIsChangeDaily()
     isChangeCampaign = FunIsChangeCampaign()
     isChangeChannelRelation = FunIsChangeChannelRelation()
+    isChangeSetUp = FunIsChangeSetUp()
     
     If isChangeDaily Then
         
@@ -36,8 +39,15 @@ Private Sub Workbook_Open()
         Sheets("tmp").Range("I3") = 0
     End If
     
+    If isChangeSetUp Then
+        '设置数据指标的显示
+        Call SetMetricDataDisplay("Daily")
+        Call SetMetricDataDisplay("Campaign")
+        Sheets("tmp").Range("I5") = 0
+    End If
+    
     '如果有改变则保存更改
-    If isChangeCampaign Or isChangeDaily Then
+    If isChangeCampaign Or isChangeDaily Or isChangeSetUp Then
         ThisWorkbook.Save
     Else
 '        MsgBox "没有内容被修改"
@@ -78,3 +88,14 @@ Function FunIsChangeChannelRelation() As Boolean
     End If
 
 End Function
+
+Function FunIsChangeSetUp() As Boolean
+'配置表是否被修改
+    If Sheets("tmp").Range("I5") = 1 Then
+        FunIsChangeSetUp = True
+    Else
+        FunIsChangeSetUp = False
+    End If
+
+End Function
+

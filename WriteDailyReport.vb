@@ -92,8 +92,8 @@ Sub WriteDailyReport()
     If twoMonthArr(2) = "" Then twoMonthArr(2) = twoMonthArr(1)
     If twoYearArr(2) = "" Then twoYearArr(2) = twoYearArr(1)
     '对月份和年份数据排序，数组下标0开始
-    arrYear = dicYear.keys
-    arrMonth = dicMonth.keys
+    arrYear = dicYear.Keys
+    arrMonth = dicMonth.Keys
     Call StringSort(arrYear)
     Call YearMonthSort(arrMonth)
     
@@ -169,12 +169,12 @@ Sub WriteDailyReport()
         '一年开始日期列表
         Sheets(reportName).Shapes("ddlYearStart").ControlFormat.RemoveAllItems
         Sheets(reportName).Shapes("ddlYearStart").ControlFormat.AddItem arrYear
-        Sheets(reportName).Shapes("ddlYearStart").ControlFormat.ListIndex = ArrayDataIndex(arrYear, CInt(twoYearArr(1))) + 1
+        Sheets(reportName).Shapes("ddlYearStart").ControlFormat.ListIndex = ArrayDataIndex(arrYear, twoYearArr(1)) + 1
         Sheets(reportName).Shapes("ddlYearStart").OnAction = "DDLDailyChanged"
         '一年结束日期列表
         Sheets(reportName).Shapes("ddlYearEnd").ControlFormat.RemoveAllItems
         Sheets(reportName).Shapes("ddlYearEnd").ControlFormat.AddItem arrYear
-        Sheets(reportName).Shapes("ddlYearEnd").ControlFormat.ListIndex = ArrayDataIndex(arrYear, CInt(twoYearArr(2))) + 1
+        Sheets(reportName).Shapes("ddlYearEnd").ControlFormat.ListIndex = ArrayDataIndex(arrYear, twoYearArr(2)) + 1
         Sheets(reportName).Shapes("ddlYearEnd").OnAction = "DDLDailyChanged"
     Else
         isDisplayYear = False
@@ -276,6 +276,8 @@ Sub WriteDailyReport()
     Call SetCurrencyFormat(reportName, 40, 4, currencyFormat)
     Call SetCurrencyFormat(reportName, 40, 9, currencyFormat)
     Call SetCurrencyFormat(reportName, 40, 14, currencyFormat)
+    
+    
     '绘制饼图
     Call PieChartForDaily
     '绘制柱形图
@@ -472,7 +474,7 @@ Sub ColumnClusteredChartForDaily()
 
     arr = Sheets(reportName).Range("AA2", Sheets(reportName).Cells(rowCount + 1, 32))
     
-    arrKeys = dicDate.keys
+    arrKeys = dicDate.Keys
     
     For i = 1 To rowCount
         arr(i, 1) = arrKeys(i - 1)
@@ -598,7 +600,7 @@ Sub PieChartForDaily()
     '25为第Y列索引号
     arr = Sheets(reportName).Range("S2", Sheets(reportName).Cells(rowCount + 1, 25))
 
-    arrKeys = dicChannel.keys
+    arrKeys = dicChannel.Keys
 
     For i = 1 To rowCount
         arr(i, 1) = arrKeys(i - 1)
@@ -633,7 +635,9 @@ Sub PieChartForDaily()
             Sheets(reportName).Shapes("chartMetricThree").ControlFormat.AddItem Array("Cost", "Conversion", "Revenue")
         End If
         Sheets(reportName).Shapes("chartMetricThree").ControlFormat.ListIndex = 1
+        Sheets(reportName).Shapes("chartMetricThree").OnAction = "DailyChartMetricThreeChange"
     End If
+    
 
     Sheets(reportName).Shapes("chartMetricThree").ZOrder msoBringToFront
     
@@ -729,7 +733,7 @@ Sub DailyChartDataTypeChange()
     Erase arr
     arr = Sheets(reportName).Range("AA2", Sheets(reportName).Cells(rowCount + 1, 32))
     
-    arrKeys = dicDate.keys
+    arrKeys = dicDate.Keys
     
     For i = 1 To rowCount
         arr(i, 1) = arrKeys(i - 1)
@@ -792,6 +796,10 @@ Sub DailyChartDataTypeChange()
     Else
         Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.ListIndex = 2
     End If
+
+    '选中一个单元格，防止跳到其他地方
+    Sheets(reportName).Activate
+    ActiveSheet.Range("C6").Select
 
 End Sub
 
@@ -900,13 +908,5 @@ Sub DailyChartMetricThreeChange()
     Sheets(reportName).Select
     '选择框重置一个
     ActiveSheet.Range("D40").Select
-
-End Sub
-
-
-Sub TestDailySort()
-    
-
-
 
 End Sub

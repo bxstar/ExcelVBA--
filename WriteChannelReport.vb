@@ -70,6 +70,8 @@ Sub WriteChannelReport()
     For rowIndex = dataRowBeginIndex To dataRowEndIndex - 1
         Sheets(reportName).Rows(rowIndex).EntireRow.Hidden = False
         Sheets(reportName).Rows(rowIndex).EntireRow.Interior.ColorIndex = xlNone
+        Sheets(reportName).Rows(rowIndex).EntireRow.font.color = vbBlack
+        Sheets(reportName).Rows(rowIndex).EntireRow.font.Bold = False
     Next
     
     '源表中得到有数据的行
@@ -223,6 +225,8 @@ Sub DDLChannelDayChanged()
     For rowIndex = dataRowBeginIndex To dataRowEndIndex - 1
         Sheets(reportName).Rows(rowIndex).EntireRow.Hidden = False
         Sheets(reportName).Rows(rowIndex).EntireRow.Interior.ColorIndex = xlNone
+        Sheets(reportName).Rows(rowIndex).EntireRow.font.color = vbBlack
+        Sheets(reportName).Rows(rowIndex).EntireRow.font.Bold = False
     Next
     
     '源表中得到有数据的行
@@ -458,8 +462,6 @@ Sub SortBySubChannel(ByRef arrChannel As Variant)
         arrChannel(i - 1) = arrSortChannel(i, 1)
     Next
     
-    
-    
     Set dicChannel = Nothing
     Set dicSubChannel = Nothing
 End Sub
@@ -523,9 +525,10 @@ Sub InsertGroupSubChannel()
         ActiveSheet.Rows(groupDataRowIndex).Insert Shift:=xlDown
         
         
-        '设置背景色
+        '设置字体，颜色，背景色
         ActiveSheet.Range("A" & groupDataRowIndex & ":Y" & groupDataRowIndex).Interior.ColorIndex = Sheets(dataSheetName).Cells(1, 1).Interior.ColorIndex
-        
+        ActiveSheet.Range("A" & groupDataRowIndex & ":Y" & groupDataRowIndex).font.ColorIndex = Sheets(dataSheetName).Cells(1, 1).font.ColorIndex
+        ActiveSheet.Range("A" & groupDataRowIndex & ":Y" & groupDataRowIndex).font.Bold = True
         '计算汇总值
         ReDim groupChannelData(1, 1 To 23)
         
@@ -553,6 +556,7 @@ Sub InsertGroupSubChannel()
         dataRowCount = dataRowCount + 1
     Next
     
+
     
     Set dicChannel = Nothing
     Set dicSubChannel = Nothing
