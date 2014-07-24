@@ -304,14 +304,14 @@ Function CollectionToArray(coll As Collection)
 End Function
 
 Function ArraySort(a, ByVal keyCol As Integer, af As Integer)
-'二维数组排序，返回的结果结构和原来一样，但是值都是string型的
-  Dim Row As Long
+'二维数组排序，a：需要排序的二维数组， keyCol：排序列从1开始，af：1顺序2逆序
+    Dim Row As Long
     Dim Col As Long
-    Dim idx() As String    '存放需要排序的列
-    Dim index() As String    '存放一个索引.方便操作其他非排序列
+    Dim idx() As Variant    '存放需要排序的列
+    Dim index() As Variant    '存放一个索引.方便操作其他非排序列
     Dim i As Long
     Dim j As Long
-    Dim b() As String    '一个过渡的二维数组.
+    Dim b() As Variant    '一个过渡的二维数组.
     '初始化
     Row = UBound(a, 1)
     Col = UBound(a, 2)
@@ -338,13 +338,12 @@ Function ArraySort(a, ByVal keyCol As Integer, af As Integer)
             a(i, j) = b(i, j)
         Next
     Next
-    FDSort = a
 End Function
 
-Sub QkSort(Ay() As String, Io As Long, Jo As Long, index() As String)
+Sub QkSort(Ay() As Variant, Io As Long, Jo As Long, index() As Variant)
 '升序快速排序法，Ay()只能传入一维数组
 'index()传入一维数组，注意：数组上标一定要和AY()一样
-    Dim i As Long, j As Long, X As String, tp As String
+    Dim i As Long, j As Long, X As Variant, tp As Variant
     Dim bQ As Boolean    'i到j跳跃开关
     '初始化
     i = Io
