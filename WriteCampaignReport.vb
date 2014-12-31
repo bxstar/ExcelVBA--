@@ -28,6 +28,12 @@ Sub WriteCampaignReport()
     
     dataSheetName = "Campaign元数据"
     reportName = "Campaign"
+    
+    Set st = GetSheet(reportName)
+    If st Is Nothing Then
+        Exit Sub
+    End If
+    
     totalRowCount = Sheets(dataSheetName).UsedRange.Rows.Count
     totalColCount = Sheets(dataSheetName).UsedRange.Columns.Count
     
@@ -71,7 +77,7 @@ Sub WriteCampaignReport()
     If twoMonthArr(2) = "" Then twoMonthArr(2) = twoMonthArr(1)
     
     '对月份数据排序，数组下标0开始
-    arrMonth = dicMonth.keys
+    arrMonth = dicMonth.Keys
     Call YearMonthSort(arrMonth)
     Set dicMonth = Nothing
     
@@ -378,7 +384,7 @@ Sub ChartForCampaign()
     '构造饼图的数据源
     arr = Sheets(reportName).Range("AA2", Sheets(reportName).Cells(rowCount + 1, 32))
     
-    arrKeys = dicCampaign.keys
+    arrKeys = dicCampaign.Keys
     
     For i = 1 To rowCount
         arr(i, 1) = arrKeys(i - 1)
@@ -489,7 +495,7 @@ Sub CampaignChartDataTypeChange()
     Erase arr
     arr = Sheets(reportName).Range("AA2", Sheets(reportName).Cells(rowCount + 1, 32))
     
-    arrKeys = dicCampaign.keys
+    arrKeys = dicCampaign.Keys
     
     For i = 1 To rowCount
         arr(i, 1) = arrKeys(i - 1)
@@ -602,7 +608,7 @@ Sub DDLChannelChanged()
         Exit Sub
     End If
     
-    arrCampaigns = dicCampaign.keys
+    arrCampaigns = dicCampaign.Keys
     
     Sheets(reportName).Shapes("ddlCampaign").ControlFormat.List = "all"
     Sheets(reportName).Shapes("ddlCampaign").ControlFormat.ListIndex = 1
@@ -615,3 +621,4 @@ Sub DDLChannelChanged()
     Call DDLCampaignChannelChanged
     
 End Sub
+

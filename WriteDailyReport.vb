@@ -33,6 +33,11 @@ Sub WriteDailyReport()
     dataSheetName = "Daily元数据"
     reportName = "Daily"
     
+    Set st = GetSheet(reportName)
+    If st Is Nothing Then
+        Exit Sub
+    End If
+    
     totalRowCount = Sheets(dataSheetName).UsedRange.Rows.Count
     totalColCount = Sheets(dataSheetName).UsedRange.Columns.Count
     

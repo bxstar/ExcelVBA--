@@ -529,3 +529,14 @@ Sub FormatSocial()
    Sheets("Social Performance").Range("n38:n" & LastRow).NumberFormat = "#,##0.00"
    Sheets("Social Performance").Range("o38:o" & LastRow).NumberFormat = "[$$-C09]#,##0.00"
 End Sub
+
+
+Function GetSheet(ByVal sname As String) As Object
+'安全获取工作表，即使没有这个表也不报错
+  Dim ttt As Object
+  Set ttt = Nothing
+  On Error Resume Next
+  Set ttt = Sheets(sname)
+  On Error GoTo 0
+  Set GetSheet = ttt
+End Function

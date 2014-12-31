@@ -19,6 +19,11 @@ Sub WriteChannelReport()
     dataSheetName = "Daily元数据"
     reportName = "Channel"
     
+    Set st = GetSheet(reportName)
+    If st Is Nothing Then
+        Exit Sub
+    End If
+    
     '汇率及货币格式
     rate = Sheets(dataSheetName).Cells(1, 4)
     currencyFormat = Sheets(dataSheetName).Cells(1, 4).NumberFormatLocal
