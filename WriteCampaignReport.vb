@@ -422,6 +422,7 @@ Sub ChartForCampaign()
             Sheets(reportName).Shapes("chartMetric1").ControlFormat.AddItem Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         End If
         Sheets(reportName).Shapes("chartMetric1").ControlFormat.ListIndex = 1
+		Sheets(reportName).Shapes("chartMetric1").OnAction = "CampaignChartMetricChange"
     End If
     
     Sheets(reportName).Shapes("chartMetric1").ZOrder msoBringToFront

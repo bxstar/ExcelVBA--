@@ -537,6 +537,7 @@ Sub ColumnClusteredChartForDaily()
             Sheets(reportName).Shapes("chartMetricOne").ControlFormat.AddItem Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         End If
         Sheets(reportName).Shapes("chartMetricOne").ControlFormat.ListIndex = 1
+		Sheets(reportName).Shapes("chartMetricOne").OnAction = "DailyChartMetricOneChange"
     End If
     
     If Not IsShapeExists(reportName, "chartMetricTwo") Then
@@ -548,6 +549,7 @@ Sub ColumnClusteredChartForDaily()
             Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.AddItem Array("Imp", "Clicks", "Cost", "Conversion", "Revenue")
         End If
         Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.ListIndex = 2
+		Sheets(reportName).Shapes("chartMetricTwo").OnAction = "DailyChartMetricTwoChange"
     End If
     
     Sheets(reportName).Shapes("ddlDailyChartChannel").ZOrder msoBringToFront
