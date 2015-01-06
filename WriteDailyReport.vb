@@ -795,6 +795,7 @@ Sub DailyChartDataTypeChange()
         Call AddDdlInOneCell(reportName, "K5", "DailyChartMetricOneChange", metricFields, "chartMetricOne", 1)
     Else
         Sheets(reportName).Shapes("chartMetricOne").ControlFormat.ListIndex = 1
+		Sheets(reportName).Shapes("chartMetricOne").OnAction = "DailyChartMetricOneChange"
     End If
     
     If Not IsShapeExists(reportName, "chartMetricTwo") Then
@@ -802,6 +803,7 @@ Sub DailyChartDataTypeChange()
         Call AddDdlInOneCell(reportName, "M5", "DailyChartMetricTwoChange", metricFields, "chartMetricTwo", 2)
     Else
         Sheets(reportName).Shapes("chartMetricTwo").ControlFormat.ListIndex = 2
+		Sheets(reportName).Shapes("chartMetricTwo").OnAction = "DailyChartMetricTwoChange"
     End If
 
     '选中一个单元格，防止跳到其他地方

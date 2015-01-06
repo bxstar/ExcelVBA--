@@ -174,7 +174,7 @@ Sub WriteChannelReport()
     Next
     
     '分组汇总
-    Call InsertGroupSubChannel
+    Call InsertGroupSubChannel(arrChannel)
     
     '报表页选中
     Sheets(reportName).Activate
@@ -326,7 +326,7 @@ Sub DDLChannelDayChanged()
     Next
     
     '分组汇总
-    Call InsertGroupSubChannel
+    Call InsertGroupSubChannel(arrChannel)
     
     '报表页选中
     Sheets(reportName).Activate
@@ -472,7 +472,8 @@ Sub SortBySubChannel(ByRef arrChannel As Variant)
 End Sub
 
 
-Sub InsertGroupSubChannel()
+'参数为元数据中含有内容的channel数组
+Sub InsertGroupSubChannel(arrChannelData As Variant)
 '插入子渠道分组汇总
     Dim dicChannel As Object, dicSubChannel As Object, i As Integer, j As Integer, arrSortChannel As Variant
     Dim reportName As String, dataSheetName As String, n As Integer, arr As Variant, rowCount As Integer, colIndex As Integer
@@ -497,16 +498,18 @@ Sub InsertGroupSubChannel()
 
     '源表中得到有数据的行
     For i = 1 To UBound(arr)
-        '取得数据中的渠道
-        cellChannel = arr(i, 1)
-        If dicChannel(cellChannel) = "" Then
-            dicChannel(cellChannel) = arr(i, 2)
-            rowCount = rowCount + 1
-        Else
-            subChannelArr = Split(dicChannel(cellChannel), ",")
-            subChannelIndex = ArrayDataIndex(subChannelArr, arr(i, 2))
-            If subChannelIndex = -1 Then
-                dicChannel(cellChannel) = dicChannel(cellChannel) & "," & arr(i, 2)
+        '取得数据中的渠道，只有元数据中有内容的渠道才汇总
+        If ArrayDataIndex(arrChannelData, arr(i, 2)) <> -1 Then
+            cellChannel = arr(i, 1)
+            If dicChannel(cellChannel) = "" Then
+                dicChannel(cellChannel) = arr(i, 2)
+                rowCount = rowCount + 1
+            Else
+                subChannelArr = Split(dicChannel(cellChannel), ",")
+                subChannelIndex = ArrayDataIndex(subChannelArr, arr(i, 2))
+                If subChannelIndex = -1 Then
+                    dicChannel(cellChannel) = dicChannel(cellChannel) & "," & arr(i, 2)
+                End If
             End If
         End If
     Next

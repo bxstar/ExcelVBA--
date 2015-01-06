@@ -532,6 +532,7 @@ Sub CampaignChartDataTypeChange()
         Call AddDdlInOneCell(reportName, "H5", "CampaignChartMetricChange", metricFields, "chartMetric1", 1)
     Else
         Sheets(reportName).Shapes("chartMetric1").ControlFormat.ListIndex = 1
+		Sheets(reportName).Shapes("chartMetric1").OnAction = "CampaignChartMetricChange"
     End If
     
     Sheets(reportName).Shapes("chartMetric1").ZOrder msoBringToFront
