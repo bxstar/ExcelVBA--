@@ -247,7 +247,7 @@ Sub DDLChannelDayChanged()
         cellDate = arr(i, 2)
         If cellDate = "" Then Exit For
         
-        If cellDate >= startDate And cellDate <= endDate Then
+        If (CDate(cellDate) - CDate(startDate)) >= 0 And (CDate(cellDate) - CDate(endDate)) <= 0 Then
             filterFlag = True
         Else
             filterFlag = False
