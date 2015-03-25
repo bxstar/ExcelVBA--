@@ -212,7 +212,7 @@ Sub DDLChannelDayChanged()
     startDate = ValueDDL("ddlDayStart", reportName)
     endDate = ValueDDL("ddlDayEnd", reportName)
     
-    If startDate > endDate Then
+    If CDate(startDate) > CDate(endDate) Then
         MsgBox "开始日期必须小于结束日期"
         Exit Sub
     End If
