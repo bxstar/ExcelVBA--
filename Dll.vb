@@ -133,7 +133,7 @@ Function IsInWeek(dateWeekStart As Variant, day As Variant) As Boolean
     Dim dayStart As Date, dayEnd As Date
     
     dayStart = CDate(dateWeekStart)
-    dayEnd = DateAdd("d", 7, dayStart)
+    dayEnd = DateAdd("d", 6, dayStart)
     
     If day >= dayStart And day <= dayEnd Then
         IsInWeek = True
